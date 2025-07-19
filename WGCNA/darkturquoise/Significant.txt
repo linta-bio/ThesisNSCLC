@@ -1,0 +1,14 @@
+Term	Overlap	padj
+Staphylococcus aureus infection	10/95	0.0471707147686213
+Pentose and glucuronate interconversions	6/34	0.0274671401811774
+Porphyrin and chlorophyll metabolism	7/43	0.019742765922047
+Ascorbate and aldarate metabolism	6/30	0.0164632282936592
+Pathways in cancer	35/531	0.0156510015027646
+Estrogen signaling pathway	14/137	0.015349613496218
+GABAergic synapse	11/89	0.0139104706299394
+Basal cell carcinoma	10/63	0.00365510719696617
+Signaling pathways regulating pluripotency of stem cells	16/143	0.00340405012842475
+Drug metabolism	14/108	0.00238127941739712
+Retinol metabolism	13/68	7.43717071267779E-05
+Steroid hormone biosynthesis	13/61	2.95167499360661E-05
+Metabolism of xenobiotics by cytochrome P450	16/76	2.8908362099614E-06
