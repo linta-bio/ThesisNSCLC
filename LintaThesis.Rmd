@@ -1,0 +1,490 @@
+---
+title: "Untitled"
+output: word_document
+date: "2025-07-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r,eval=FALSE}
+# Below are the codes to normalize the raw count data using VST method.
+
+library(DESeq2)
+
+# reading the count data and the sample information
+
+count=read.delim("CountDataMales.txt",row.names = 1, check.names = FALSE)
+Design=read.delim("DesignMales.txt",row.names = 1, check.names = FALSE)
+
+# Below code creating the DESeq2 Object. Also added ajcc_pathologic_stage and age_at_diagnosis added as confounders to regress out the varitaion due to them.
+
+dds <- DESeqDataSetFromMatrix(countData = count,colData = Design,design = ~ ajcc_pathologic_stage+age_at_diagnosis+Group)
+
+# Extract the VST normalized data
+
+vst_data <- vst(dds, blind = TRUE)
+vst_matrix <- assay(vst_data)
+
+# Writing the VST normalized data to a file for future use
+
+write.table(vst_matrix,file="VST_NormalizedData.txt",sep = "\t",quote = FALSE,col.names = NA)
+```
+
+
+```{r}
+# Below are the codes for PCA analysis.
+
+library(PCAtools)
+
+# reading the vst data and the sample information
+
+DataVST=read.delim("VST_NormalizedData.txt",row.names = 1)
+Design=read.delim("DesignMales.txt",row.names = 1)
+
+# Computing the median absolute deviation to select the top varying genes.
+
+mad_values = apply(DataVST, 1, mad)
+
+# Rank the genes based on their MAD values, and get the indices of the top 2000 genes
+
+top_2000_genes_indices = order(mad_values, decreasing = TRUE)[1:2000]
+
+# Extract the top 2000 genes based on MAD
+
+top_2000_genes = DataVST[top_2000_genes_indices, ]
+
+# Performing PCA
+
+ResultsPCA = pca(top_2000_genes, metadata = Design, removeVar = 0.1,scale = FALSE)
+
+# pca() returns a list. From the list the PCA cordinates are extracted. Then added sample group information
+
+PCA_Cordinates=ResultsPCA$rotated
+PCA_Cordinates$Group=Design$Group
+write.table(PCA_Cordinates,file = "PCA_top2000.txt",sep = "\t",col.names = NA,quote = FALSE)
+
+# Printing the variaces captured by each PCs.
+head(ResultsPCA$variance)
+
+#      PC1       PC2       PC3       PC4       PC5       PC6 
+#18.517846 12.328193  8.703907  5.403446  4.949512  3.976679 
+```
+
+```{r}
+# Below are the codes for generating the PCA figure.
+
+library(ggplot2)
+
+dat=read.delim("PCA_top2000.txt",row.names = 1,check.names = FALSE)
+png("PCA_top2000.png", width = 2000, height = 1500, res = 300)
+ggplot(dat, aes(PC1,PC2))+geom_point(size=3,aes(fill=Group,color=Group),pch=21)+
+  theme_bw()+
+  scale_color_manual(values=c("Drinker_and_Smoker"="#6b0000","NonDrinker_and_NonSmoker"="#386890"))+
+  scale_fill_manual(values=c("Drinker_and_Smoker"="#990000","NonDrinker_and_NonSmoker"="#4682b4"))+
+  labs(x="PC1, 18.52% variation",y="PC2, 12.33% variation")+
+  theme(axis.title = element_text(size=10),legend.position = "right",
+        plot.margin = margin(2,0.5,2,0.5, "cm"),
+        legend.title=element_blank(),legend.text=element_text(size=10),
+        legend.key.size = unit(0.5, "cm"))+
+  guides(shape = guide_legend(ncol =1,override.aes=list(fill="grey",color="grey")),
+         color = guide_legend(ncol =1),fill = guide_legend(ncol =1))
+dev.off()
+```
+
+
+```{r}
+# Below are the codes for generating the bar graph showing variations captured by first 10 PCs.
+# First created a dataframe storing the values.
+
+df <- data.frame(PC = c("PC1", "PC2", "PC3", "PC4","PC5", "PC6", "PC7", "PC8","PC9","PC10"),
+                 `Variance_Percentage` = c(18.52, 12.33, 8.70, 5.40,4.95,3.98,3.67,3.05,2.89,2.71))
+
+# Convert PC column to factor to maintain order
+
+df$PC <- factor(df$PC, levels = df$PC)
+
+# Creating Bar Graph
+
+png("First10_PC.png", width = 2000, height = 1500, res = 300)
+ggplot(df, aes(x = PC, y = Variance_Percentage)) +
+  geom_bar(stat = "identity",fill="darkgreen") +
+  labs(title = "First 10 Principal Components", x = "Principal Components", y = "Variance (%)") +
+  theme_minimal()
+dev.off()
+```
+
+
+
+```{r}
+# below are codes for differential gene expression analysis
+
+library(DESeq2)
+
+# reading the count data and the sample information
+
+count=read.delim("CountDataMales.txt",row.names = 1, check.names = FALSE)
+Design=read.delim("DesignMales.txt",row.names = 1, check.names = FALSE)
+
+# Below code creating the DESeq2 Object. Also added ajcc_pathologic_stage and age_at_diagnosis added as confounders to regress out the varitaion due to them.
+dds <- DESeqDataSetFromMatrix(countData = count,colData = Design,design = ~ ajcc_pathologic_stage+age_at_diagnosis+Group)
+dds=DESeq(dds)
+resDeseq2=results(dds,contrast = c("Group","Drinker_and_Smoker","NonDrinker_and_NonSmoker"))
+
+# Writing the results.
+
+write.table(as.data.frame(resDeseq2),file="ResultsDGE.txt",sep="\t", quote=FALSE,col.names = NA)
+
+```
+
+
+```{r}
+# Below is the code for creating the volcanoplots.
+# First reading the DGE results obtained. Also manually added an additional column "Label", in which significant gene names are included to print in the plot.
+
+library(ggrepel)
+library(ggplot2)
+
+data=read.delim("ResultsDGE.txt",row.names = 1)
+
+png("VolcanoPlot.png", width = 2000, height = 1500, res = 300)
+ggplot(data=data, aes(x=log2FoldChange, y=-log10(padj))) + theme_bw()+
+  geom_point(data=subset(data, padj <.05 & log2FoldChange <= -0.5),aes(x=log2FoldChange,y=-log10(padj )),pch=21,color="#005900",fill="#007300",size=1.5)+
+  geom_point(data=subset(data, padj <.05 & log2FoldChange >= 0.5),
+             aes(x=log2FoldChange,y=-log10(padj)),pch=21,fill="#fcc100",color="#caae51",size=1.5)+
+  geom_point(data=subset(data, padj <.05 & log2FoldChange > 0 & log2FoldChange < 0.5),
+             aes(x=log2FoldChange,y=-log10(padj)),pch=21,color="#fdcd33",fill="#fdda66",size=1.5)+
+  geom_point(data=subset(data, padj <.05 & log2FoldChange < 0 & log2FoldChange > -0.5),
+             aes(x=log2FoldChange,y=-log10(padj)),pch=21,color="#008000",fill="#66b266",size=1.5)+
+  geom_point(data=subset(data, padj >=.05),aes(x=log2FoldChange,y=-log10(padj)),fill="#b2b2b2",color="#595959",size=1.2,pch=21)+
+  geom_hline(yintercept=1.3010299957, linetype="dashed",size=0.25)+
+  geom_label_repel(aes(label = Label),segment.color = '#cccccc',fill=NA,color="black",size=2.5,
+                   label.size = NA,segment.alpha=0.75,box.padding=0,max.overlaps = 500)+
+  theme(plot.title = element_text(hjust = 0.5,size =9),panel.grid.minor = element_blank(),
+        axis.title=element_text(size=8),axis.text.y=element_text(size=8),axis.text.x=element_text(size=8),plot.margin = margin(1,1,1,1, "cm"))+
+  labs(x="Log2 Fold Change",y="-log10 (adj.p)")
+dev.off()
+```
+
+
+
+```{r}
+# below are the codes used for WGCNA network analysis
+# First loading the R packages reqired
+
+library(WGCNA)
+library(flashClust)
+library(matrixStats)
+
+# Loading the VST data of all genes.
+
+Data=read.delim("Network/VST_NormalizedData.txt",row.names = 1)
+
+# For filtering genes, first computing the variannce of genes across the samples.
+
+gene_variance <- rowVars(as.matrix(Data))
+
+#below finds the median variance across all genes (the 50th percentile).
+
+quantile_cutoff <- quantile(gene_variance, 0.5)
+
+# below code keeps only genes whose variance is above the median. This is to removes low-variance genes because those genes are often uninformative.
+
+filtered_genes <- Data[gene_variance > quantile_cutoff, ]
+
+# Below code calculates the proportion of samples where expression is greater than 5 in 90% of samples to ensures genes are not only variable, but also expressed in enough samples.
+
+expressed_in_samples <- rowSums(filtered_genes > 5) / ncol(filtered_genes)
+filtered_genes2 <- filtered_genes[expressed_in_samples > 0.9, ]
+
+# Now starts the network analysis, using the filtered genes (n=9981 genes).
+# Below, the softConnectivity() function computes how strongly each gene is co-expressed with the other genes.
+# Also genes in the bottom 25% of connectivity are removed.
+
+soft_conn <- softConnectivity(filtered_genes2)
+filtered_genes3 <- filtered_genes2[soft_conn > quantile(soft_conn, 0.25), ]
+
+expression.data <- as.data.frame(t(filtered_genes3)) # (n=7355 genes)
+
+# Below, the goodSamplesGenes() function checks for Missing values (NAs), constant expression values and low variability
+# It returns a diagnostic list (gsg) showing if any samples or genes should be removed.
+
+gsg <-goodSamplesGenes(expression.data)
+summary(gsg)
+gsg$allOK # All the genes and samples were "OK"
+
+# Below the function, select an optimal soft-thresholding power for network construction.
+spt <- pickSoftThreshold(expression.data) 
+```
+
+
+```{r}
+# The code makes a plot Soft Threshold (power) vs Topology Model Fit,signed R^2. From which we can estimate the soft-thresholding power for network construction.
+
+par(mar=c(1,1,1,1))
+plot(spt$fitIndices[,1],spt$fitIndices[,2],
+xlab="Soft Threshold (power)",ylab="Scale Free Topology Model Fit,signed R^2",type="n",
+main = paste("Scale independence"))
+text(spt$fitIndices[,1],spt$fitIndices[,2],col="red")
+abline(h=0.80,col="red")
+```
+
+
+```{r}
+softPower <- 5  # it is the value that retains the highest mean connectivity while reaching an 𝑅2 value above 0.80.
+
+# Below, adjacency() function builds the gene-gene adjacency matrix, where each element reflects how strongly two genes are connected. spearman correlations were used.
+
+adjacency <- adjacency(expression.data, power = softPower,type = "signed",corOptions = list(use = 'p', method = 'spearman'))
+
+# Below, TOMsimilarity() calculates the Topological Overlap Matrix (TOM) which is a measure of shared neighbors between genes. It captures network structure beyond pairwise correlation. 
+
+TOM <- TOMsimilarity(adjacency)
+
+# Below the code creates a dissimilarity matrix, where high values mean genes are less connected. It's needed for clustering.
+
+TOM.dissimilarity <- 1-TOM
+
+# Below, hclust() performs hierarchical clustering of genes based on TOM dissimilarity (builds a gene dendrogram used for module detection.)
+
+geneTree <- hclust(as.dist(TOM.dissimilarity), method = "average")
+```
+
+```{r}
+# Plotting the clusterng
+
+png("Network/GeneHclust.png", width = 2000, height = 1500, res = 300)
+plot(geneTree, xlab="", sub="", main = "Gene clustering on TOM-based dissimilarity", 
+labels = FALSE, hang = 0.04)
+dev.off()
+```
+
+```{r}
+# To identify modules from this gene dendrogram, you can use the cutreeDynamic() function. This will allow you to set a minimum cluster size. For genomic data like this it is more beneficial to set minimum module sizes relatively high as you are working with high loads of data. The authors of WGCNA recommend to start at a minClusterSize = 30
+
+Modules <- cutreeDynamic(dendro = geneTree, distM = TOM.dissimilarity, deepSplit = 2, pamRespectsDendro = FALSE, minClusterSize = 30)
+```
+
+```{r}
+# Inspecting the modules and their size
+table(Modules)  # There are 39 modules.
+```
+
+```{r}
+# Assigning the module a color for better visualization
+
+ModuleColors <- labels2colors(Modules)
+table(ModuleColors)
+```
+
+```{r}
+# Plotting the modules identified and labelled with colors.
+
+png("Network/GeneHclust_ColorLabelled.png", width = 2000, height = 1500, res = 300)
+plotDendroAndColors(geneTree, ModuleColors,"Module",
+dendroLabels = FALSE, hang = 0.03,
+addGuide = TRUE, guideHang = 0.05,
+main = "Gene dendrogram and module colors")
+dev.off()
+```
+
+
+```{r}
+# A ME (Module Eigengene) is the standardized gene expression profile for a given module. To identify the Module Eigengene, we can call the expression data into the moduleEigengenes() function.
+
+MElist <- moduleEigengenes(expression.data, colors = ModuleColors)
+MEs <- MElist$eigengenes  # This is the identified eigengenes for each modules.
+write.table(MEs,file="Network/ModuleEigeneValues.txt",sep = "\t",col.names = NA,quote = FALSE)
+```
+
+```{r}
+#To further condense the clusters into more meaningful modules we can cluster modules based on pairwise eigengene correlations and merge the modules that have similar expression profiles.
+
+ME.dissimilarity = 1-cor(MElist$eigengenes, use="complete")      # Calculate eigengene dissimilarity
+METree = hclust(as.dist(ME.dissimilarity), method = "average")  #Clustering eigengenes 
+
+# Now, using the new found measurements of dissimilarity, we can construct a cluster tree. We will also be adding a line at the height of .25. This height corresponds to a correlation of over 75%. Any branches below this line are more than 75% related, and we can merge them
+```
+
+```{r}
+png("Network/eigengenesCluster.png", width = 2000, height = 1500, res = 300)
+par(mar = c(0,4,2,0)) #seting margin sizes
+par(cex = 0.6);#scaling the graphic
+plot(METree)
+abline(h=.25, col = "red") #a height of .25 corresponds to correlation of .75
+dev.off()
+```
+
+```{r}
+# Now we can merge the  modules using the mergeCloseModules() function
+
+merge <- mergeCloseModules(expression.data, ModuleColors, cutHeight = .25)
+mergedColors = merge$colors
+
+mergedMEs = merge$newMEs  # Eigengenes of the new merged modules
+write.table(mergedMEs,file="Network/ModuleEigeneValuesMerged.txt",sep = "\t",col.names = NA,quote = FALSE)
+```
+
+```{r}
+png("Network/Merging.png", width = 2000, height = 1500, res = 300)
+plotDendroAndColors(geneTree, cbind(ModuleColors, mergedColors), 
+c("Original Module", "Merged Module"),
+dendroLabels = FALSE, hang = 0.03,
+addGuide = TRUE, guideHang = 0.05,
+main = "Gene dendrogram and module colors for original and merged modules")
+dev.off()
+```
+
+```{r}
+png("Network/FinalModules.png", width = 2000, height = 1500, res = 300)
+plotDendroAndColors(geneTree, mergedColors,"Module",
+dendroLabels = FALSE, hang = 0.03,
+addGuide = TRUE, guideHang = 0.05,
+main = "Gene dendrogram and module colors")
+dev.off()
+```
+
+```{r}
+table(mergedColors)
+modNames = substring(names(mergedMEs), 3)
+geneModuleMembership = as.data.frame(cor(expression.data, mergedMEs, use = "p",method="spearman"))
+```
+
+```{r}
+intramodularConnectivity <- intramodularConnectivity(adjacency, mergedColors)
+```
+
+```{r}
+gene_names <- rownames(intramodularConnectivity)
+hub_genes_df <- data.frame(
+  GeneName = gene_names,  # Gene names
+  Module = mergedColors,  # Module assignments from WGCNA
+  kTotal = intramodularConnectivity$kTotal,  # Total connectivity
+  kWithin = intramodularConnectivity$kWithin,  # Intramodular connectivity
+  kOut = intramodularConnectivity$kOut,  # External connectivity
+  kDiff = intramodularConnectivity$kDiff  # Difference between kWithin and kOut
+)
+
+sorted_hub_genes <- hub_genes_df[order(-hub_genes_df$kWithin), ]
+
+write.table(as.data.frame(sorted_hub_genes),file = "Network/Module_genes.txt",col.names = NA,quote = FALSE,sep = "\t")
+```
+
+```{r}
+library(dplyr)
+
+# Select top 10% most connected genes within each module
+top_hub_genes <- hub_genes_df %>%
+  group_by(Module) %>%
+  top_n(10, kWithin)  # Take top 10 highest kWithin genes per module
+
+# View results
+write.table(as.data.frame(top_hub_genes),file = "Network/top10_hub_genes.txt",col.names = NA,quote = FALSE,sep = "\t")
+```
+
+```{r}
+# Below code taking the hub genes of each modules
+
+top_hubs <- chooseTopHubInEachModule(expression.data, mergedColors)
+write.table(as.data.frame(top_hubs),file = "Network/HubGenes.txt",col.names = NA,quote = FALSE)
+```
+
+
+```{r}
+Modules=read.delim("Network/Module_genes.txt")
+DGE=read.delim("Network/ResultsDGE.txt")
+
+MergedDF=merge(Modules, DGE, by = "GeneName", all = FALSE)
+write.table(as.data.frame(MergedDF),file = "Network/Module_genes_withLFC.txt",col.names = NA,quote = FALSE,sep = "\t")
+```
+
+
+```{r}
+# Below code counting and calculating percentage of up and down regulated genes in each modules
+
+library(dplyr)
+
+df=read.delim("Network/Module_genes_withLFC.txt")
+
+percentage_df <- df %>%
+  group_by(Module, Regulation) %>%
+  summarise(Count = n(), .groups = 'drop') %>%
+  group_by(Module) %>%
+  mutate(Percentage = round(100 * Count / sum(Count), 2))
+write.table(as.data.frame(percentage_df),file = "Network/Module_Perc_Up_Down.txt",col.names = NA,quote = FALSE,sep = "\t")
+```
+
+```{r}
+library(ggplot2)
+
+# Create stacked bar plot
+
+sorted_modules <- percentage_df %>%
+  filter(Regulation == "Up") %>%
+  arrange(desc(Percentage)) %>%
+  pull(Module)
+
+# Update factor levels to sort modules
+percentage_df$Module <- factor(percentage_df$Module, levels = sorted_modules)
+
+png("Network/FinalModules_Regulations.png", width = 2000, height = 1500, res = 300)
+ggplot(percentage_df, aes(x = Module, y = Percentage, fill = Regulation)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Percentage of Up and Down Regulated Genes per Module",
+    x = "Module",
+    y = "Percentage"
+  ) +
+  geom_hline(yintercept=80, linetype="dashed",size=0.25)+
+  scale_fill_manual(values = c("Up" = "tomato", "Down" = "darkgreen")) +
+  theme(axis.text.x = element_text(angle = 45,hjust = 1))
+dev.off()
+```
+
+## Figure generation for pathways
+
+```{r}
+library(dplyr)
+library(ggplot2)
+Pathway=read.delim("Network/darkturquoise/Significant.txt")
+
+Pathway$Term <- factor(Pathway$Term, levels = rev(Pathway$Term[order(Pathway$padj)]))
+
+png("Network/darkturquoise/darkturquoise.png", width = 2000, height = 1500, res = 300)
+ggplot(Pathway, aes(x = -log10(padj), y = Term)) +
+  geom_bar(stat = "identity",fill="darkturquoise") +
+  labs(title = "Significant pathways", x = "-log10(padj)", y = "KEGG Pathway") +
+  theme_minimal()
+dev.off()
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+Pathway=read.delim("Network/turquoise/Significant.txt")
+
+Pathway$Term <- factor(Pathway$Term, levels = rev(Pathway$Term[order(Pathway$padj)]))
+
+png("Network/turquoise/turquoise.png", width = 2000, height = 2000, res = 300)
+ggplot(Pathway, aes(x = -log10(padj), y = Term)) +
+  geom_bar(stat = "identity",fill="turquoise") +
+  labs(title = "Significant pathways", x = "-log10(padj)", y = "KEGG Pathway") +
+  theme_minimal()
+dev.off()
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+Pathway=read.delim("Network/yellowgreen/Significant.txt")
+
+Pathway$Term <- factor(Pathway$Term, levels = rev(Pathway$Term[order(Pathway$padj)]))
+
+png("Network/yellowgreen/yellowgreen.png", width = 2000, height = 1500, res = 300)
+ggplot(Pathway, aes(x = -log10(padj), y = Term)) +
+  geom_bar(stat = "identity",fill="yellowgreen") +
+  labs(title = "Significant pathways", x = "-log10(padj)", y = "KEGG Pathway") +
+  theme_minimal()
+dev.off()
+```
