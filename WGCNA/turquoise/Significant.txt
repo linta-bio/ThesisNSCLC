@@ -1,0 +1,36 @@
+Term	Overlap	padj
+Systemic lupus erythematosus	41/135	5.99133331299773E-15
+Cell cycle	39/124	5.99133331299773E-15
+Neutrophil extracellular trap formation	48/189	1.5047138690415E-14
+Alcoholism	45/186	6.98251778930284E-13
+Viral carcinogenesis	39/203	5.73619960236275E-08
+DNA replication	14/36	1.16361988315296E-06
+RNA transport	34/186	1.75607228858785E-06
+Prion disease	41/273	1.87349385824714E-05
+Ribosome biogenesis in eukaryotes	21/108	0.000189435717378823
+Huntington disease	41/306	0.000282477244741284
+Glutathione metabolism	13/57	0.00157457200372904
+Mismatch repair	8/23	0.00157457200372904
+Cysteine and methionine metabolism	12/50	0.00157457200372904
+Diabetic cardiomyopathy	28/203	0.00305003421153563
+Cellular senescence	23/156	0.00405768132027569
+Amyotrophic lateral sclerosis	42/364	0.004493143990128
+Oocyte meiosis	20/129	0.00462445161846473
+Protein processing in endoplasmic reticulum	24/171	0.00530134806422483
+Parkinson disease	31/249	0.00657419656785032
+Necroptosis	22/159	0.010129381376728
+Spliceosome	21/150	0.0108288076708904
+Base excision repair	8/33	0.0139602069593315
+Human T-cell leukemia virus 1 infection	27/219	0.0139602069593315
+Alzheimer disease	40/369	0.0139602069593315
+Non-alcoholic fatty liver disease	21/155	0.0139602069593315
+Arginine and proline metabolism	10/50	0.0146860440798297
+One carbon pool by folate	6/20	0.014988891688829
+Fanconi anemia pathway	10/54	0.0250724784468635
+Glyoxylate and dicarboxylate metabolism	7/30	0.0279009953662449
+Pyrimidine metabolism	10/56	0.030940369419839
+RNA polymerase	7/31	0.0318439390691115
+Homologous recombination	8/41	0.0421165340431078
+Fructose and mannose metabolism	7/33	0.0428416665410918
+Pathways of neurodegeneration	46/475	0.0428416665410918
+Spinocerebellar ataxia	18/143	0.0479672025494703
