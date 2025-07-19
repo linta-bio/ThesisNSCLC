@@ -1,0 +1,39 @@
+ID	primary_diagnosis	gender	Group	age_at_diagnosis	ajcc_pathologic_stage	years_smoked	cigarettes_per_day	exposure_duration_years	pack_years_smoked
+C3N_00167	Adenocarcinoma, NOS	male	NonDrinker_and_NonSmoker	64.5	Stage IIA	NA	NA	NA	NA
+C3N_00169	Adenocarcinoma, NOS	male	Drinker_and_Smoker	57.55	Stage IB	37	8	36	12
+C3N_00180	Adenocarcinoma, NOS	male	Drinker_and_Smoker	56.51	Stage IIIA	37	5	36	7.5
+C3N_00545	Adenocarcinoma, NOS	male	Drinker_and_Smoker	59.2	Stage IIIA	36	15	35	21.8
+C3N_00546	Adenocarcinoma, NOS	male	Drinker_and_Smoker	58.81	Stage IIA	32	3	31	3.8
+C3N_00547	Adenocarcinoma, NOS	male	Drinker_and_Smoker	60.83	Stage IIA	27	3	26	3
+C3N_00551	Adenocarcinoma, NOS	male	Drinker_and_Smoker	54.76	Stage IB	35	5	34	7
+C3N_00555	Squamous cell carcinoma, NOS	male	Drinker_and_Smoker	59.65	Stage IIB	28	3	27	3.2
+C3N_00556	Adenocarcinoma, NOS	male	NonDrinker_and_NonSmoker	69.76	Stage IIB	NA	NA	NA	NA
+C3N_00560	Adenocarcinoma, NOS	male	Drinker_and_Smoker	55.81	Stage IIIA	27	7	26	7
+C3N_00578	Adenocarcinoma, NOS	male	Drinker_and_Smoker	48.83	Stage IIIA	32	5	31	6.3
+C3N_00580	Adenocarcinoma, NOS	male	Drinker_and_Smoker	56.79	Stage IB	32	5	31	6.3
+C3N_01016	Adenocarcinoma, NOS	male	Drinker_and_Smoker	56.95	Stage IIIA	30	3	29	3.5
+C3N_01017	Squamous cell carcinoma, NOS	male	Drinker_and_Smoker	56.87	Stage IIB	27	5	26	5
+C3N_01019	Adenocarcinoma, NOS	male	Drinker_and_Smoker	56.3	Stage IB	26	3	25	3
+C3N_01023	Adenocarcinoma, NOS	male	NonDrinker_and_NonSmoker	58.26	Stage IIIA	NA	NA	NA	NA
+C3N_01028	Squamous cell carcinoma, NOS	male	NonDrinker_and_NonSmoker	72.94	Stage IB	NA	NA	NA	NA
+C3N_01408	Adenocarcinoma, NOS	male	Drinker_and_Smoker	58.3	Stage IIIA	37	3	36	4.7
+C3N_01410	Adenocarcinoma, NOS	male	NonDrinker_and_NonSmoker	64.22	Stage IIB	NA	NA	NA	NA
+C3N_01415	Adenocarcinoma, NOS	male	NonDrinker_and_NonSmoker	71.25	Stage IB	NA	NA	NA	NA
+C3N_01489	Adenocarcinoma, NOS	male	NonDrinker_and_NonSmoker	65.23	Stage IB	NA	NA	NA	NA
+C3N_02088	Adenocarcinoma, NOS	male	Drinker_and_Smoker	60.38	Stage IIB	36	5	35	7.5
+C3N_02089	Adenocarcinoma, NOS	male	NonDrinker_and_NonSmoker	76.47	Stage IB	NA	NA	NA	NA
+C3N_02090	Adenocarcinoma, NOS	male	Drinker_and_Smoker	61.46	Stage IB	29	4	28	4.6
+C3N_02142	Adenocarcinoma, NOS	male	Drinker_and_Smoker	63.46	Stage IB	31	5	30	6.3
+C3N_02150	Adenocarcinoma, NOS	male	Drinker_and_Smoker	49.45	Stage IIB	31	3	30	3.8
+C3N_02153	Adenocarcinoma, NOS	male	NonDrinker_and_NonSmoker	55.45	Stage IIIA	NA	NA	NA	NA
+C3N_02155	Adenocarcinoma, NOS	male	Drinker_and_Smoker	45.39	Stage IIB	26	5	25	5
+C3N_02421	Adenocarcinoma, NOS	male	Drinker_and_Smoker	58.95	Stage IA	47	20	46	40
+C3N_02424	Adenocarcinoma, NOS	male	Drinker_and_Smoker	64.75	Stage IIIA	37	20	36	30
+C3N_02425	Squamous cell carcinoma, NOS	male	Drinker_and_Smoker	61.26	Stage IIA	46	20	45	40
+C3N_02572	Adenocarcinoma, NOS	male	NonDrinker_and_NonSmoker	49.32	Stage IIA	NA	NA	NA	NA
+C3N_02928	Adenocarcinoma, NOS	male	Drinker_and_Smoker	65.02	Stage IIB	47	20	46	40
+C3N_03054	Adenocarcinoma, NOS	male	Drinker_and_Smoker	72.99	Stage IA3	46	30	45	60
+C3N_03057	Adenocarcinoma, NOS	male	NonDrinker_and_NonSmoker	61.42	Stage IIB	NA	NA	NA	NA
+C3N_03073	Adenocarcinoma, NOS	male	Drinker_and_Smoker	69.05	Stage IIIA	49	10	48	21.5
+C3N_03076	Squamous cell carcinoma, NOS	male	Drinker_and_Smoker	68.07	Stage IIA	45	10	44	20
+C3N_04127	Squamous cell carcinoma, NOS	male	Drinker_and_Smoker	63.42	Stage IIIA	45	30	44	58.5
